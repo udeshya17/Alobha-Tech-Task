@@ -181,8 +181,20 @@ button, input, select, textarea { font: inherit; }
 }
 
 .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
-.tab { padding: 9px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.12); color: var(--muted); }
-.tab.active { background: rgba(255,255,255,0.10); color: var(--text); border-color: rgba(255,255,255,0.18); }
+.tab {
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--muted);
+  background: rgba(255,255,255,0.04);
+  cursor: pointer;
+  appearance: none;
+}
+.tab.active {
+  background: rgba(255,255,255,0.16);
+  color: var(--text);
+  border-color: rgba(255,255,255,0.20);
+}
 
 .kpi { display: grid; gap: 10px; grid-template-columns: repeat(2, 1fr); }
 @media (min-width: 640px) { .kpi { grid-template-columns: repeat(4, 1fr); } }

@@ -21,7 +21,9 @@ export function AppShell() {
   }, []);
 
   const firstTeamId = useMemo(() => teams[0]?.id || null, [teams]);
-  const dashboardActive = location.pathname.startsWith("/teams/") && location.pathname !== "/teams";
+  const pathParts = location.pathname.split("/").filter(Boolean);
+  const activeTeamId = pathParts[0] === "teams" && pathParts[1] ? pathParts[1] : null;
+  const dashboardTo = activeTeamId ? `/teams/${activeTeamId}` : firstTeamId ? `/teams/${firstTeamId}` : null;
 
   return (
     <>
@@ -34,7 +36,7 @@ export function AppShell() {
             </div>
 
             <div className="nav">
-              <NavLink to="/teams" className={({ isActive }) => (isActive ? "active" : "")}>
+              <NavLink to="/teams" end className={({ isActive }) => (isActive ? "active" : "")}>
                 Teams
               </NavLink>
               {me?.role === "SUPER_ADMIN" ? (
@@ -42,17 +44,17 @@ export function AppShell() {
                   Users
                 </NavLink>
               ) : null}
-              {firstTeamId ? (
-                <a
-                  href="#"
-                  className={dashboardActive ? "active" : ""}
+              {dashboardTo ? (
+                <NavLink
+                  to={dashboardTo}
+                  className={({ isActive }) => (isActive ? "active" : "")}
                   onClick={(e) => {
                     e.preventDefault();
-                    navigate(`/teams/${firstTeamId}`);
+                    navigate(dashboardTo);
                   }}
                 >
                   Dashboard
-                </a>
+                </NavLink>
               ) : null}
             </div>
 
