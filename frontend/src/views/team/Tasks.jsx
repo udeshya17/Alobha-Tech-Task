@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../lib/api";
 import { StatusBadge, PriorityBadge } from "../../components/Badges";
 import { TaskEditor } from "./TaskEditor";
@@ -19,20 +19,23 @@ export function Tasks({ teamId, members, canAdmin }) {
   const [editing, setEditing] = useState(null);
 
   const pages = useMemo(() => Math.max(1, Math.ceil((data.total || 0) / pageSize)), [data.total, pageSize]);
+  const debouncedQ = useDebouncedValue(q, 350);
+  const requestRef = useRef({ abort: null, seq: 0 });
 
   const assigneeName = useMemo(() => {
     const map = new Map(members.map((m) => [m.userId, m.name]));
     return (id) => (id ? map.get(id) || "Unknown" : "Unassigned");
   }, [members]);
 
-  async function load() {
+  async function load(signal) {
     setLoading(true);
     setError("");
     try {
       const res = await api.get("/tasks", {
+        signal,
         params: {
           teamId,
-          q: q.trim() || undefined,
+          q: debouncedQ.trim() || undefined,
           status: status || undefined,
           assigneeId: assigneeId || undefined,
           sort,
@@ -42,6 +45,7 @@ export function Tasks({ teamId, members, canAdmin }) {
       });
       setData(res.data || { items: [], total: 0, page, pageSize });
     } catch (e) {
+      if (e?.code === "ERR_CANCELED") return;
       setError(e?.response?.data?.message || "Failed to load tasks");
     } finally {
       setLoading(false);
@@ -49,8 +53,16 @@ export function Tasks({ teamId, members, canAdmin }) {
   }
 
   useEffect(() => {
-    load();
-  }, [teamId, q, status, assigneeId, sort, page, pageSize]);
+    requestRef.current.seq += 1;
+    const seq = requestRef.current.seq;
+    if (requestRef.current.abort) requestRef.current.abort.abort();
+    const abort = new AbortController();
+    requestRef.current.abort = abort;
+    load(abort.signal).finally(() => {
+      if (requestRef.current.seq === seq) requestRef.current.abort = null;
+    });
+    return () => abort.abort();
+  }, [teamId, debouncedQ, status, assigneeId, sort, page, pageSize]);
 
   function openNew() {
     setEditing(null);
@@ -264,10 +276,27 @@ export function Tasks({ teamId, members, canAdmin }) {
         members={members}
         editing={editing}
         canReassign={canAdmin}
-        onSaved={load}
+        onSaved={() => {
+          requestRef.current.seq += 1;
+          if (requestRef.current.abort) requestRef.current.abort.abort();
+          const abort = new AbortController();
+          requestRef.current.abort = abort;
+          load(abort.signal).finally(() => {
+            requestRef.current.abort = null;
+          });
+        }}
       />
     </div>
   );
+}
+
+function useDebouncedValue(value, delay) {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setV(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return v;
 }
 
 

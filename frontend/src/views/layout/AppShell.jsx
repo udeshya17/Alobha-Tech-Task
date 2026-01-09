@@ -72,8 +72,6 @@ export function AppShell() {
       </div>
 
       <Outlet />
-
-      <div className="footer-space" />
     </>
   );
 }
