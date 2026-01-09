@@ -37,6 +37,11 @@ export function AppShell() {
               <NavLink to="/teams" className={({ isActive }) => (isActive ? "active" : "")}>
                 Teams
               </NavLink>
+              {me?.role === "SUPER_ADMIN" ? (
+                <NavLink to="/users" className={({ isActive }) => (isActive ? "active" : "")}>
+                  Users
+                </NavLink>
+              ) : null}
               {firstTeamId ? (
                 <a
                   href="#"
