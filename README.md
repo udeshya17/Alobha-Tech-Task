@@ -22,9 +22,6 @@ MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-host>/<dbName>?retryWri
 JWT_SECRET=replace_me_with_a_long_random_secret
 JWT_EXPIRES_IN=7d
 
-SEED_SUPER_ADMIN_EMAIL=admin@demo.com
-SEED_SUPER_ADMIN_PASSWORD=Admin@12345
-SEED_SUPER_ADMIN_NAME=Super Admin
 ```
 
 #### 2) Install dependencies
@@ -39,14 +36,8 @@ cd ../frontend
 npm install
 ```
 
-#### 3) Seed Super Admin
 
-```bash
-cd backend
-npm run seed
-```
-
-#### 4) Run the apps
+#### 3) Run the apps
 
 Backend:
 
@@ -56,6 +47,12 @@ npm run dev
 ```
 
 Frontend:
+
+#### frontend environment
+
+```env
+VITE_API_URL = https://alobha-tech-task.onrender.com/api
+```
 
 ```bash
 cd frontend
