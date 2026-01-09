@@ -39,11 +39,17 @@ export function TaskEditor({ open, onClose, teamId, members, editing, canReassig
         description,
         status,
         priority,
-        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-        assigneeId: assigneeId || null
+        dueDate: dueDate ? new Date(dueDate).toISOString() : null
       };
-      if (editing?.id) await api.patch(`/tasks/${editing.id}`, payload);
-      else await api.post("/tasks", payload);
+
+      if (editing?.id) {
+        const patchPayload = canReassign
+          ? { ...payload, assigneeId: assigneeId || null }
+          : payload;
+        await api.patch(`/tasks/${editing.id}`, patchPayload);
+      } else {
+        await api.post("/tasks", { ...payload, assigneeId: assigneeId || null });
+      }
       await onSaved?.();
       onClose?.();
     } catch (e2) {
@@ -105,6 +111,11 @@ export function TaskEditor({ open, onClose, teamId, members, editing, canReassig
             ))}
           </select>
         </div>
+        {disabledAssign ? (
+          <span className="pill" style={{ borderColor: "rgba(255,255,255,0.14)" }}>
+            <strong>Note</strong> Only a team admin can change assignee
+          </span>
+        ) : null}
 
         {error ? (
           <div className="pill" style={{ borderColor: "rgba(251,113,133,0.55)" }}>

@@ -34,8 +34,9 @@ export function Members({ teamId, members, canAdmin, onChanged }) {
     setQ("");
   }, [teamId]);
 
-  async function addMember(userId) {
-    await api.post(`/teams/${teamId}/members`, { userId, role: "MEMBER" });
+  async function addMember(userId, globalRole) {
+    const role = globalRole === "TEAM_ADMIN" ? "ADMIN" : "MEMBER";
+    await api.post(`/teams/${teamId}/members`, { userId, role });
     await onChanged?.();
     await search();
   }
@@ -94,8 +95,11 @@ export function Members({ teamId, members, canAdmin, onChanged }) {
                       <div>
                         <div style={{ fontWeight: 650 }}>{u.name}</div>
                         <div className="subtitle">{u.email}</div>
+                        <div className="subtitle" style={{ marginTop: 2 }}>
+                          {u.role}
+                        </div>
                       </div>
-                      <button className="btn primary" onClick={() => addMember(u.id)}>
+                      <button className="btn primary" onClick={() => addMember(u.id, u.role)}>
                         Add
                       </button>
                     </div>
