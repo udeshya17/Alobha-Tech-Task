@@ -23,7 +23,11 @@ tasksRouter.get("/", loadTeam, requireTeamMember(), async (req, res) => {
   if (assigneeId && mongoose.isValidObjectId(assigneeId)) {
     filter.assigneeId = new mongoose.Types.ObjectId(assigneeId);
   }
-  if (q) filter.$text = { $search: q };
+  if (q) {
+    const safe = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(safe, "i");
+    filter.$or = [{ title: re }, { description: re }];
+  }
 
   const sortMap = {
     createdAt: { createdAt: 1 },

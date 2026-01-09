@@ -13,8 +13,9 @@ export function AuthProvider({ children }) {
     setAuthToken(token);
   }, [token]);
 
-  async function refresh() {
-    if (!token) {
+  async function refresh(tokenOverride) {
+    const t = tokenOverride ?? token;
+    if (!t) {
       setMe(null);
       setLoading(false);
       return;
@@ -42,7 +43,8 @@ export function AuthProvider({ children }) {
     setToken(next);
     localStorage.setItem(TOKEN_KEY, next);
     setAuthToken(next);
-    await refresh();
+    setLoading(true);
+    await refresh(next);
   }
 
   function logout() {
